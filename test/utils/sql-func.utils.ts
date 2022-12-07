@@ -21,4 +21,15 @@ $$ LANGUAGE plpgsql;
 SELECT truncate_tables('postgres');
 
 `);
+
+
+}
+
+export async function getAllUsers(
+  app: INestApplication,
+) {
+  const dataSource = await app.resolve(DataSource);
+  return await dataSource.query(`
+  SELECT *
+	FROM "users";`);
 }
