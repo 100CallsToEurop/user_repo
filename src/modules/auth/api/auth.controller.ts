@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { UserInputModel } from 'src/modules/users/api/model/user.model';
+import { UserInputModel } from '../../../modules/users/api/model/user.model';
 import { AuthService } from '../application/auth.service';
 import { Request, Response } from 'express';
 import { RegistrationViewModel } from '../application/dto/registration-view-model';

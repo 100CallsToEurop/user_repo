@@ -11,8 +11,7 @@ export class UsersRepository {
     private readonly usersRepository: Repository<UserEntity>,
   ) {}
 
-
-  async checkEmailOrLogin(emailOrLogin: string){
+  async checkEmailOrLogin(emailOrLogin: string) {
     return await this.usersRepository.findOne({
       where: [{ email: emailOrLogin }, { login: emailOrLogin }],
     });
@@ -34,6 +33,14 @@ export class UsersRepository {
     await this.usersRepository.save({
       ...user,
       ...updateParams,
+    });
+  }
+
+  async updateRefreshToken(id: string, token?: string): Promise<void> {
+    const currentUser = await this.getUser(id);
+    await this.usersRepository.save({
+      ...currentUser,
+      storageRefreshToken: token ? token : null,
     });
   }
 }

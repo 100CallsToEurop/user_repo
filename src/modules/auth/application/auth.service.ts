@@ -10,10 +10,12 @@ import { UsersRepository } from '../../../modules/users/infrastructure/users.rep
 import { RegistrationViewModel } from './dto/registration-view-model';
 import { LoginInputModel } from '../api/model/login.model';
 import * as bcrypt from 'bcrypt';
+import { SessionsService } from '../../../modules/sessions/application/sessions.service';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly sessionsService: SessionsService,
     private readonly tokensService: TokensService,
     private readonly usersRepository: UsersRepository,
   ) {}
@@ -31,25 +33,42 @@ export class AuthService {
     await this.usersRepository.createUser(newUser);
 
     const userId = newUser.id;
-    const tokens = await this.tokensService.createTokens({userId});
+    const tokens = await this.tokensService.createTokens({ userId });
     return tokens;
   }
 
   async login(loginParams: LoginInputModel): Promise<RegistrationViewModel> {
     const user = await this.checkCredentials(loginParams);
     const userId = user.id;
-    const tokens = await this.tokensService.createTokens({userId});
+    const tokens = await this.tokensService.createTokens({ userId });
+    await this.usersRepository.updateRefreshToken(userId, tokens.refreshToken);
     return tokens;
   }
 
   async refresh(token: string): Promise<RegistrationViewModel> {
     const PayloadUserId = await this.tokensService.decodeToken(token);
-    const tokens = await this.tokensService.createTokens({PayloadUserId});
+    await this.checkToken(token);
+    const tokens = await this.tokensService.createTokens({ PayloadUserId });
+    await this.sessionsService.saveUsedToken(token);
+    await this.usersRepository.updateRefreshToken(
+      PayloadUserId,
+      tokens.refreshToken,
+    );
     return tokens;
   }
 
   async logout(token: string) {
-    await this.tokensService.decodeToken(token);
+    const PayloadUserId = await this.tokensService.decodeToken(token);
+    await this.checkToken(token);
+    await this.sessionsService.saveUsedToken(token);
+    await this.usersRepository.updateRefreshToken(PayloadUserId, null);
+  }
+
+  private async checkToken(token: string): Promise<void> {
+    const checkUsedToken = await this.sessionsService.checkUsedToken(token);
+    if (checkUsedToken) {
+      throw new UnauthorizedException();
+    }
   }
 
   private async checkEmailOrLogin(emailOrLogin: string): Promise<UserEntity> {

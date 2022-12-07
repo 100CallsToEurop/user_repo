@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { GetCurrentUserId } from 'src/common/decorators/get-current-user-id.decorator';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { GetCurrentUserId } from '../../../common/decorators/get-current-user-id.decorator';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { UsersService } from '../application/users.service';
 import { UserUpdateInputModel } from './model/user-update.model';
 import { UserInputModel } from './model/user.model';
