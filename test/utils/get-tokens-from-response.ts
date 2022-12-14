@@ -1,6 +1,6 @@
 import jwt_decode from 'jwt-decode';
 
-export function responseHeadersAuth(response) {
+export async function responseHeadersAuth(response) {
   let accessToken;
   let refreshToken;
   try {

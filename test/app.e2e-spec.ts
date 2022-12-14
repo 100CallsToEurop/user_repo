@@ -49,13 +49,20 @@ describe('AppController (e2e)', () => {
         .send(requestUserParams)
         .expect(201)
 
-        const { accessToken, refreshToken } = responseHeadersAuth(response);
+        const { accessToken, refreshToken } = await responseHeadersAuth(response);
+
+        accessToken_user = accessToken;
+        refreshToken_user = refreshToken;
+
         expect(accessToken).toMatch(
           /^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/,
         );
         expect(refreshToken).toMatch(
           /^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/,
         );
+
+        
+        
     });
 
     it('should return new access and refresh tokens [POST -> 201]', async () => {
@@ -64,23 +71,19 @@ describe('AppController (e2e)', () => {
         .send(loginUser)
         .expect(201);
 
-      const { accessToken, refreshToken } = responseHeadersAuth(response);
+      const { accessToken, refreshToken } = await responseHeadersAuth(response);
+
+      accessToken_user = accessToken;
+      refreshToken_user = refreshToken;
+
       expect(accessToken).toMatch(
         /^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/,
       );
       expect(refreshToken).toMatch(
         /^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/,
       );
-
-      accessToken_user = accessToken;
-      refreshToken_user = refreshToken;
-    });
-
-    it('should return error [POST -> 401]', async () => {
-      await request(app.getHttpServer())
-        .post('/auth/login')
-        .send(loginUserBad)
-        .expect(401);
+      //await new Promise((resolve) => setTimeout(resolve, 3000));
+      
     });
 
     it('should return user [POST -> 200]', async () => {
@@ -89,9 +92,47 @@ describe('AppController (e2e)', () => {
         .set('Authorization', `Bearer ${accessToken_user}`)
         .set('Cookie', refreshToken_user)
         .expect(200);
-        const user = reponse.body;
-        expect(user.login).toBe(requestUserParams.login);
+      const user = reponse.body;
+      expect(user.login).toBe(requestUserParams.login);
     });
+
+    /*it('should return error [POST -> 401]', async () => {
+      await request(app.getHttpServer())
+        .post('/auth/login')
+        .send(loginUserBad)
+        .expect(401);
+    });*/
+
+    it('should return new tokens [POST -> 200]', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/auth/refresh-token')
+        .set('Cookie', refreshToken_user)
+        .expect(200);
+      const { accessToken, refreshToken } = await responseHeadersAuth(response);
+
+      accessToken_user = accessToken;
+      refreshToken_user = refreshToken;
+
+    });
+
+    it('should return user [POST -> 200]', async () => {
+      const reponse = await request(app.getHttpServer())
+        .get('/users')
+        .set('Authorization', `Bearer ${accessToken_user}`)
+        .set('Cookie', refreshToken_user)
+        .expect(200);
+      const user = reponse.body;
+      expect(user.login).toBe(requestUserParams.login);
+    });
+
+    it('should logout user [POST -> 204]', async () => {
+      await request(app.getHttpServer())
+        .post('/auth/logout')
+        .set('Cookie', refreshToken_user)
+        .expect(204);
+    });
+
+    
 
   });
 });

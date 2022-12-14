@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
-import { SessionsEntity } from '../../src/modules/sessions/domain/entity/session.entity';
 import { UserEntity } from '../../src/modules/users/domain/entity/user.entity';
 import { DataSourceOptions } from 'typeorm';
+import { BadTokens } from '../../src/modules/tokens/domain/entity/tokens.entity';
 
 dotenv.config({
   path: '.env',
@@ -14,6 +14,6 @@ export const config: DataSourceOptions = {
   username: process.env.PG_USERNAME,
   password: process.env.PG_PASSWORD,
   database: process.env.PG_DATABASE,
-  entities: [UserEntity, SessionsEntity],
+  entities: [UserEntity, BadTokens],
   synchronize: true,
 };
