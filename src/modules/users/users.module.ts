@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ProfilesModule } from '../profiles/profiles.module';
 import { UsersController } from './api/users.controller';
 import { UsersService } from './application/users.service';
 import { UserEntity } from './domain/entity/user.entity';
@@ -9,7 +10,7 @@ const useCases = [];
 const adapters = [UsersRepository];
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity]), ProfilesModule],
   controllers: [UsersController],
   providers: [UsersService, ...adapters, ...useCases],
   exports: [UsersRepository],

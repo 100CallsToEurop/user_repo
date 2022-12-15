@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   BeforeInsert,
+  OneToOne,
 } from 'typeorm';
 import { UserInputModel } from '../../api/model/user.model';
 import { hash } from 'bcrypt';
+import { Profile } from '../../../../modules/profiles/domain/entity/profile.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -17,6 +19,7 @@ export class UserEntity {
       this.login = userParams.login;
       this.bio = userParams.bio || '';
       this.passwordHash = userParams.password;
+      this.profile = new Profile({name: 'Vitaliy', lastName: 'Petrovich'})
     }
   }
 
@@ -36,13 +39,18 @@ export class UserEntity {
   passwordHash: string;
 
   @Column({ nullable: true, default: null })
-  storageRefreshToken: string
+  storageRefreshToken: string;
 
   @CreateDateColumn()
   createAt: Date;
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @OneToOne(() => Profile, (profile) => profile.user, {
+    cascade: true,
+  })
+  profile: Profile;
 
   @BeforeInsert()
   async hashPassword() {

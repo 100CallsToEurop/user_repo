@@ -20,6 +20,7 @@ export class UsersService {
   }
 
   async createUser(userParams: UserInputModel): Promise<UserViewModel> {
+    console.log(1)
     const newUserEntity = new UserEntity(userParams);
     const user = await this.usersRepository.createUser(newUserEntity);
     return this.buildResponse(user);
@@ -35,5 +36,9 @@ export class UsersService {
     updateParams: UserUpdateInputModel,
   ): Promise<void> {
     return await this.usersRepository.updateUserById(id, updateParams);
+  }
+
+  async getUserAndProfile(id: string){
+     return await this.usersRepository.getUserAndProfile(id)
   }
 }

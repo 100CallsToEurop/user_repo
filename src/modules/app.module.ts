@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { TokensModule } from './tokens/tokens.module';
 import { AtStrategy } from '../common/strategies/jwt.strategy';
 import { RtStrategy } from '../common/strategies/jwt.refresh.strategy';
+import { ProfilesModule } from './profiles/profiles.module';
 @Module({
   imports: [
     TypeOrmModule.forRootAsync(TypeOrmConfigService()),
@@ -17,6 +18,7 @@ import { RtStrategy } from '../common/strategies/jwt.refresh.strategy';
     UsersModule,
     AuthModule,
     TokensModule,
+    ProfilesModule,
 
   ],
   controllers: [],
