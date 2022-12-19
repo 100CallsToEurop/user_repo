@@ -1,19 +1,27 @@
 import { Injectable } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs/dist';
+import {
+  AddBadTokenUseCase,
+  DecodeJWTTokenUseCase,
+} from '../../../../modules/tokens/application/useCases';
 import { UsersRepository } from '../../../../modules/users/infrastructure/users.repository';
-import { AuthService } from '../auth.service';
 
-@Injectable()
-export class AuthLogoutUseCase {
+export class AuthLogoutCommand {
+  constructor(public token: string) {}
+}
+
+@CommandHandler(AuthLogoutCommand)
+export class AuthLogoutUseCase implements ICommandHandler<AuthLogoutCommand> {
   constructor(
-    private readonly authService: AuthService,
+    private readonly addBadTokenUseCase: AddBadTokenUseCase,
+    private readonly decodeJWTTokenUseCase: DecodeJWTTokenUseCase,
     private readonly usersRepository: UsersRepository,
   ) {}
 
-  async execute(token: string) {
-    await this.authService.checkBadToken(token);
-    const { userId } = await this.authService.decodeJWTToken(token);
+  async execute(command: AuthLogoutCommand) {
+    const { token } = command;
+    const { userId } = await this.decodeJWTTokenUseCase.execute(token);
     await this.usersRepository.updateRefreshToken(userId, null);
-    await this.authService.addBadToken(token);
-    
+    await this.addBadTokenUseCase.execute(token);
   }
 }

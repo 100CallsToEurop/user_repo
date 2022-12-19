@@ -4,25 +4,30 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { UsersService } from '../application/users.service';
 import { UserUpdateInputModel } from './model/user-update.model';
 import { UserInputModel } from './model/user.model';
+import { UsersQueryRepository } from './queryRepository/user.qury.repository';
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersQueryRepository: UsersQueryRepository,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Post()
   async createUser(@Body() createParams: UserInputModel) {
-    return await this.usersService.createUser(createParams);
+    const newUserId =  await this.usersService.createUser(createParams);
+    return await this.usersQueryRepository.getUserInfo(newUserId);
   }
 
   @Get()
   async getUser(@GetCurrentUserId() id: string) {
-    return await this.usersService.getUser(id);
+    return await this.usersQueryRepository.getUserInfo(id);
   }
 
   @Get('/profile')
   async getUserAndProfile(@GetCurrentUserId() id: string) {
-    return await this.usersService.getUserAndProfile(id);
+    return await this.usersQueryRepository.getUserAndProfile(id);
   }
 
   @Put(':id')

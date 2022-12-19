@@ -1,28 +1,37 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { TokensService } from '../../../../modules/tokens/application/tokens.service';
+import { BadRequestException, } from '@nestjs/common';
+import { UsersQueryRepository } from '../../../../modules/users/api/queryRepository/user.qury.repository';
 import { UserInputModel } from '../../../../modules/users/api/model/user.model';
 import { UserEntity } from '../../../../modules/users/domain/entity/user.entity';
 import { UsersRepository } from '../../../../modules/users/infrastructure/users.repository';
-import { AuthService } from '../auth.service';
 import { RegistrationViewModel } from '../dto/registration-view-model';
 import { UserPayloadForTokenModel } from '../dto/user-payload-fortoken.model';
-import { AuthLoginUseCase } from './auth-login.use-case';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs/dist';
+import { AuthLoginCommand } from './auth-login.use-case';
 
-@Injectable()
-export class AuthRegistrationUseCase {
+
+
+export class AuthRegistrationCommand {
+  constructor(public createUserParams: UserInputModel) {}
+}
+
+@CommandHandler(AuthRegistrationCommand)
+export class AuthRegistrationUseCase
+  implements ICommandHandler<AuthRegistrationCommand>
+{
   constructor(
-    private readonly authService: AuthService,
     private readonly usersRepository: UsersRepository,
-    private readonly authLoginUseCase: AuthLoginUseCase,
+    private readonly usersQueryRepository: UsersQueryRepository,
+    private readonly commandBus: CommandBus,
   ) {}
 
   async execute(
-    createUserParams: UserInputModel,
+    command: AuthRegistrationCommand,
   ): Promise<RegistrationViewModel> {
-    const checkEmail = await this.authService.checkEmailOrLogin(
+    const { createUserParams } = command;
+    const checkEmail = await this.usersQueryRepository.checkEmailOrLogin(
       createUserParams.email,
     );
-    const checkLogin = await this.authService.checkEmailOrLogin(
+    const checkLogin = await this.usersQueryRepository.checkEmailOrLogin(
       createUserParams.login,
     );
     if (checkEmail || checkLogin) {
@@ -36,7 +45,7 @@ export class AuthRegistrationUseCase {
       userId: newUser.id,
       login: newUser.login,
     };
-    
-    return await this.authLoginUseCase.execute(payload);
+
+    return await this.commandBus.execute(new AuthLoginCommand(payload));
   }
 }

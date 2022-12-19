@@ -3,33 +3,18 @@ import { UserUpdateInputModel } from '../api/model/user-update.model';
 import { UserInputModel } from '../api/model/user.model';
 import { UserEntity } from '../domain/entity/user.entity';
 import { UsersRepository } from '../infrastructure/users.repository';
-import { UserViewModel } from './dto/user-view.model';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository) {}
 
-  private buildResponse(user: UserEntity): UserViewModel {
-    return {
-      id: user.id,
-      email: user.email,
-      login: user.login,
-      bio: user.bio || '',
-    };
-  }
-
-  async createUser(userParams: UserInputModel): Promise<UserViewModel> {
-    console.log(1)
+  async createUser(userParams: UserInputModel): Promise<string> {
     const newUserEntity = new UserEntity(userParams);
     const user = await this.usersRepository.createUser(newUserEntity);
-    return this.buildResponse(user);
+    return user.id
   }
 
-  async getUser(id: string): Promise<UserViewModel> {
-    const user = await this.usersRepository.getUser(id);
-    return this.buildResponse(user);
-  }
 
   async updateUserById(
     id: string,
@@ -38,7 +23,4 @@ export class UsersService {
     return await this.usersRepository.updateUserById(id, updateParams);
   }
 
-  async getUserAndProfile(id: string){
-     return await this.usersRepository.getUserAndProfile(id)
-  }
 }

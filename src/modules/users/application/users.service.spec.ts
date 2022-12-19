@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserInputModel } from '../api/model/user.model';
 import { UserEntity } from '../domain/entity/user.entity';
 import { UsersRepository } from '../infrastructure/users.repository';
-import { UserViewModel } from './dto/user-view.model';
+import { UserViewModel } from '../api/queryRepository/dto/user-view.model';
 import { UsersService } from './users.service';
 import { v4 as uuidv4 } from 'uuid';
 import { UserUpdateInputModel } from '../api/model/user-update.model';
@@ -41,7 +41,7 @@ describe('test UserService', () => {
           id,
           email: 'test1@mail.ru;',
           login: 'testic;',
-          bio: updateParams.bio
+          bio: updateParams.bio,
         };
       }),
   };
@@ -86,7 +86,9 @@ describe('test UserService', () => {
       bio: 'sdadasdasd',
     });
 
-    const updateUser = await userService.updateUserById(userId, {bio: 'dsffsdfs'});
+    const updateUser = await userService.updateUserById(userId, {
+      bio: 'dsffsdfs',
+    });
 
     expect(updateUser).toEqual({
       id: expect.any(String),
